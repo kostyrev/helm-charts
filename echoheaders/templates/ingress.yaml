@@ -1,4 +1,5 @@
 {{- if .Values.ingress.enabled }}
+{{- $serviceName := include "fullname" . -}}
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
@@ -17,11 +18,14 @@ spec:
   tls:
     {{- toYaml .Values.ingress.tls | nindent 4 }}
   {{- end }}
-  backend:
-    serviceName: {{ template "fullname" . }}
-    servicePort: 80
-  {{- if .Values.ingress.rules }}
   rules:
-    {{- toYaml .Values.ingress.rules | nindent 4 }}
-  {{- end }}
-{{- end }}
+    {{- range $host := .Values.ingress.hosts }}
+    - host: {{ $host }}
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: {{ $serviceName }}
+              servicePort: 80
+    {{- end -}}
+{{- end -}}
